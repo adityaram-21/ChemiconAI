@@ -63,12 +63,12 @@ class Trainer:
 
         print("Model compiled and datasets prepared.")
 
-    def train(self, epochs=20, log_csv_path='training_log.csv'):
+    def train(self, epochs=20, log_csv_path='training_log.csv', checkpoint_path='best_model.weights.h5'):
         if self.train_dataset is None or self.val_dataset is None:
             raise ValueError("Call `.setup()` before training.")
         
         early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
-        checkpoint = ModelCheckpoint(filepath='best_model.h5', save_best_only=True, monitor='val_loss', mode='min')
+        checkpoint = ModelCheckpoint(filepath = checkpoint_path, save_best_only=True, monitor='val_loss', mode='min')
 
         history = self.model.fit(self.train_dataset, validation_data=self.val_dataset, epochs=epochs, callbacks=[early_stop, checkpoint])
 

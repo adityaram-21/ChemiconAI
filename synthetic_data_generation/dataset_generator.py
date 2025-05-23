@@ -82,7 +82,7 @@ class HandDrawnDatasetGenerator:
         blend_alpha (float): Alpha value for blending the paper texture (default is 0.1).
         """
         for entry in self.metadata:
-            input_path = entry['image']
+            input_path = entry['image_path']
             img = cv2.imread(input_path, cv2.IMREAD_GRAYSCALE)
             if img is None:
                 continue

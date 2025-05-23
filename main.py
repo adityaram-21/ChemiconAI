@@ -1,27 +1,51 @@
 import os
 from tokenization.character_tokenizer import CharacterTokenizer
 from tokenization.dataset_preparator import ImageSMILESDatasetPreparator
-from tokenization.image_dataset_builder import ImageToSmilesDatasetBuilder
+from synthetic_data_generation.dataset_generator import DatasetGenerator
 from model.image_to_smiles import ImageToSmilesModel
 from trainer import Trainer
+
+# -------------------------------------------------
+# 0. Generate Hand-Drawn Images if not already done
+# -------------------------------------------------
+BASE_DIR = 'data'
+VERSION = 'v1'
+DATASET_DIR = os.path.join(BASE_DIR, f'handdrawn_{VERSION}')
+MAPPING_JSON_PATH = os.path.join(DATASET_DIR, 'metadata.json')
+IMAGE_DIR = os.path.join(DATASET_DIR, 'augmented')
+
+if os.path.exists(MAPPING_JSON_PATH) and os.path.exists(IMAGE_DIR) and len(os.listdir(IMAGE_DIR)) > 0:
+    print("Hand-drawn images already generated. Skipping generation.")
+else:
+    print("Generating hand-drawn images...")
+    generator = DatasetGenerator(
+        smiles_file='GDB13_Subset-ABCDE.smi.gz',
+        paper_texture_path='data/paper_texture.png',
+        base_dir=BASE_DIR,
+        version=VERSION,
+        num_samples=100000
+    )
+    generator.generate()
+    print("Hand-drawn images generated and saved to:", IMAGE_DIR)
 
 # -----------------------------
 # 1. Configuration Parameters
 # -----------------------------
-MAPPING_JSON_PATH = 'data/image_smiles_mapping.json'
-IMAGE_DIR = 'data/molecule_images_handdrawn'
 MAX_SEQ_LEN = 100
 NUM_SAMPLES = 10000
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-4
 EPOCHS = 20
-CSV_LOG_PATH = 'training_log.csv'
-CHECKPOINT_PATH = 'best_model.weights.h5'
+CSV_LOG_PATH = 'history/training_log.csv'
+CHECKPOINT_PATH = 'history/best_model.weights.h5'
+
+# Ensure the history directory exists
+os.makedirs('history', exist_ok=True)
 
 # -----------------------------
 # 2. Tokenizer Setup
 # -----------------------------
-print("🔤 Loading tokenizer...")
+print("Loading tokenizer...")
 tokenizer = CharacterTokenizer(mapping_json_path=MAPPING_JSON_PATH)
 char_to_idx = tokenizer.char_to_idx
 vocab_size = tokenizer.vocab_size
@@ -29,7 +53,7 @@ vocab_size = tokenizer.vocab_size
 # -----------------------------
 # 3. Prepare Paired Data
 # -----------------------------
-print("🧪 Preparing image-SMILES pairs...")
+print("Preparing image-SMILES pairs...")
 preparator = ImageSMILESDatasetPreparator(
     tokenizer=tokenizer,
     input_image_dir=IMAGE_DIR,
@@ -41,7 +65,7 @@ image_paths, smiles_encoded = preparator.prepare()
 # -----------------------------
 # 4. Build Model
 # -----------------------------
-print("🧠 Building model...")
+print("Building model...")
 model_builder = ImageToSmilesModel(vocab_size, MAX_SEQ_LEN)
 model = model_builder.get_model()
 model.summary()
@@ -49,7 +73,7 @@ model.summary()
 # -----------------------------
 # 5. Train Model
 # -----------------------------
-print("🚀 Starting training...")
+print("Starting training...")
 trainer = Trainer(
     model=model,
     image_paths=image_paths,
@@ -61,7 +85,7 @@ trainer = Trainer(
 )
 
 trainer.setup()
-trainer.train(epochs=EPOCHS, log_csv_path=CSV_LOG_PATH)
+trainer.train(epochs=EPOCHS, log_csv_path=CSV_LOG_PATH, checkpoint_path=CHECKPOINT_PATH)
 
-print("Training complete. Best model weights saved to:", CHECKPOINT_PATH)
-print("Training metrics logged to:", CSV_LOG_PATH)
+print("Training complete. Best model weights saved to: ", CHECKPOINT_PATH)
+print("Training metrics logged to: ", CSV_LOG_PATH)
