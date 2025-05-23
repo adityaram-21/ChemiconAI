@@ -81,3 +81,24 @@ class Trainer:
 
         print(f"Training metrics saved to '{log_csv_path}'.")
         return history
+    
+    def evaluate(self, idx_to_char, num_samples=15, csv_path='predictions.csv'):
+        if self.val_dataset is None:
+            raise ValueError("Validation dataset not prepared. Call `.setup()` first.")
+
+        for (img_batch, decoder_input), target in self.val_dataset.take(1):
+            predictions = self.model.predict([img_batch, decoder_input])
+            predicted_ids = tf.argmax(predictions, axis=-1).numpy()
+
+            for i in range(min(num_samples, len(predicted_ids))):
+                pred_tokens = [idx_to_char[idx] for idx in predicted_ids[i] if idx_to_char[idx] != '<pad>']
+                target_tokens = [idx_to_char[idx] for idx in target[i].numpy() if idx_to_char[idx] != '<pad>']
+
+                print(f"\nSample {i + 1}")
+                print("Predicted SMILES:", ''.join(pred_tokens))
+                print("Target SMILES   :", ''.join(target_tokens))
+
+                #copy to csv
+                with open(csv_path, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([i + 1, ''.join(pred_tokens), ''.join(target_tokens)])

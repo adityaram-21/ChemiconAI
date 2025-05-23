@@ -38,6 +38,8 @@ LEARNING_RATE = 1e-4
 EPOCHS = 20
 CSV_LOG_PATH = 'history/training_log.csv'
 CHECKPOINT_PATH = 'history/best_model.weights.h5'
+EVALUATION_PATH = 'history/predictions.csv'
+MODEL_PATH = 'history/image_to_smiles_model.h5'
 
 # Ensure the history directory exists
 os.makedirs('history', exist_ok=True)
@@ -89,3 +91,13 @@ trainer.train(epochs=EPOCHS, log_csv_path=CSV_LOG_PATH, checkpoint_path=CHECKPOI
 
 print("Training complete. Best model weights saved to: ", CHECKPOINT_PATH)
 print("Training metrics logged to: ", CSV_LOG_PATH)
+
+#------------------------------
+# 6. Evaluate Model
+#------------------------------
+print("Evaluating model...")
+trainer.evaluate(idx_to_char=tokenizer.idx_to_char, num_samples=15, csv_path=EVALUATION_PATH)
+print("Evaluation complete. Predictions saved to: ", EVALUATION_PATH)
+
+model.save(MODEL_PATH)
+print("Model saved to: ", MODEL_PATH)
