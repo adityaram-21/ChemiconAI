@@ -135,11 +135,9 @@ class HandDrawnDatasetGenerator:
         self.load_smiles()
         # Draw molecules
         self.draw_molecules()
-
         # Simulate hand-drawn effect
         self.simulate_hand_drawn()
-
         # Save metadata
         self.save_metadata()
-        
+
         print(f"Dataset generated at {self.base_dir} with {self.num_samples} samples.")
