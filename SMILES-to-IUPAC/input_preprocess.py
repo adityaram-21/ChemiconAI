@@ -23,7 +23,7 @@ class SmilesToIUPACPreprocessor:
         """
         Preprocess the input CSV file to clean and filter the data.
         """
-        self.csv_path = "smiles_to_iupac_clean.csv"
+        self.csv_path = "data/smiles_to_iupac_clean.csv"
         # Read the input CSV file
         df = pd.read_csv(self.raw_csv_path)
 

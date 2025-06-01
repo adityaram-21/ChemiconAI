@@ -72,7 +72,7 @@ class Trainer:
         accuracy = total_correct / total_tokens if total_tokens > 0 else 0
         return avg_loss, accuracy
     
-    def train(self, num_epochs, checkpoint_path='best_model.pth', early_stopping_patience=10):
+    def train(self, num_epochs, checkpoint_path='history/best_model.pth', early_stopping_patience=10):
         checkpoint_dir = os.path.dirname(checkpoint_path)
         if checkpoint_dir and not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
