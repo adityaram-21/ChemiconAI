@@ -28,9 +28,9 @@ os.makedirs('history', exist_ok=True)
 # 2. Preprocess Data
 # -----------------------------
 preprocessor = SmilesToIUPACPreprocessor(
-    csv_path=CSV_PATH,
-    vocab_smiles_path=VOCAB_SMILES,
-    vocab_iupac_path=VOCAB_IUPAC
+    raw_csv_path = CSV_PATH,
+    smiles_vocab_path=VOCAB_SMILES,
+    iupac_vocab_path=VOCAB_IUPAC
 )
 
 preprocessor.preprocess_data()
@@ -101,6 +101,7 @@ df = pd.read_csv(preprocessor.csv_path)
 samples = df.sample(15, random_state=42).reset_index(drop=True)
 
 print("Sample predictions:")
+print(samples[['SMILES', 'IUPAC']].head(15))
 
 inference_csv_path = 'history/inference_results.csv'
 with open(inference_csv_path, 'w', newline='') as f:
