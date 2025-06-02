@@ -34,7 +34,7 @@ class Decoder:
 
             for _ in range(max_length):
                 output = self.model(input_tensor, target_tensor)
-                next_token = output.argmax(dim=-1)[:, -1]
+                next_token = output.argmax(dim=-1)[:, -1].unsqueeze(1)
                 target_tensor = torch.cat([target_tensor, next_token], dim=1)
                 if next_token.item() == self.end_token_id:
                     break
@@ -56,7 +56,7 @@ class Decoder:
 
                     for i in range(beam_width):
                         next_seq = seq + [top_indices[0, i].item()]
-                        next_score = score + top_probs[0, i].item()
+                        next_score = (score + top_probs[0, i].item()) / len(next_seq)
                         all_candidates.append((next_score, next_seq))
 
                 # Select the best sequences

@@ -2,6 +2,7 @@ import torch
 import os, csv, json, random
 import pandas as pd
 from tqdm import tqdm
+import numpy as np
 
 from model.smiles_to_iupac import SMILESToIUPACTransformer
 from input_preprocess import SmilesToIUPACPreprocessor
@@ -100,6 +101,12 @@ decoder = Decoder(
 df = pd.read_csv(preprocessor.csv_path)
 samples = df.sample(15, random_state=42).reset_index(drop=True)
 
+#Compute length of the input tensor using percentile
+iupac_lengths = [len(sequence) for sequence in preprocessor.iupac_tensors]
+percentile_length = int(np.percentile(iupac_lengths, 95))
+
+print(f"Using max decode length (95th percentile): {percentile_length}")
+
 print("Sample predictions:")
 print(samples[['SMILES', 'IUPAC']].head(15))
 
@@ -116,8 +123,9 @@ with open(inference_csv_path, 'w', newline='') as f:
         encoded_input = preprocessor.encode_sequence(smiles, preprocessor.char2idx_smiles)
         input_tensor = torch.tensor(encoded_input, dtype=torch.long).unsqueeze(0).to(DEVICE)
 
-        greedy_output = decoder.greedy_decode(input_tensor)
-        beam_output = decoder.beam_search_decode(input_tensor, beam_width=3)
+        # Perform greedy and beam search decoding
+        greedy_output = decoder.greedy_decode(input_tensor, max_length=percentile_length)
+        beam_output = decoder.beam_search_decode(input_tensor, beam_width=3, max_length=percentile_length)
 
         print("-" * 50)
         print(f"SMILES: {smiles}")
