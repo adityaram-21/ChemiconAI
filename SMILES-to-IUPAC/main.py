@@ -35,7 +35,7 @@ preprocessor = SmilesToIUPACPreprocessor(
 )
 
 preprocessor.preprocess_data()
-preprocessor.load_and_sample_data(n=50000)
+preprocessor.load_and_sample_data(n=100000)
 preprocessor.build_and_save_vocabs()
 preprocessor.encode_all()
 preprocessor.filter_by_length(percentile=95)
@@ -125,7 +125,7 @@ with open(inference_csv_path, 'w', newline='') as f:
 
         # Perform greedy and beam search decoding
         greedy_output = decoder.greedy_decode(input_tensor, max_length=percentile_length)
-        beam_output = decoder.beam_search_decode(input_tensor, beam_width=3, max_length=percentile_length)
+        beam_output = decoder.beam_search_decode(input_tensor, beam_width=7, max_length=percentile_length)
 
         print("-" * 50)
         print(f"SMILES: {smiles}")
